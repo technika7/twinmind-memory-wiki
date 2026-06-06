@@ -8,12 +8,12 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-
 # ── Transcript Schemas ─────────────────────────────────────────
 
 
 class TranscriptCreate(BaseModel):
     """Request body for creating a new transcript."""
+
     title: str = Field(
         ...,
         min_length=1,
@@ -40,6 +40,7 @@ class TranscriptCreate(BaseModel):
 
 class TranscriptResponse(BaseModel):
     """Response body for a transcript."""
+
     id: UUID
     title: str
     content: str
@@ -47,6 +48,7 @@ class TranscriptResponse(BaseModel):
     occurred_at: Optional[datetime] = None
     status: str
     error_message: Optional[str] = None
+    processed_entities: Optional[list] = None
     created_at: datetime
     updated_at: datetime
 
@@ -55,6 +57,7 @@ class TranscriptResponse(BaseModel):
 
 class TranscriptCreatedResponse(BaseModel):
     """Response body after creating a transcript (202 Accepted)."""
+
     id: UUID
     status: str
     created_at: datetime
@@ -63,6 +66,7 @@ class TranscriptCreatedResponse(BaseModel):
 
 class TranscriptStatusResponse(BaseModel):
     """Response body for checking transcript processing status."""
+
     id: UUID
     status: str
     error_message: Optional[str] = None
@@ -75,6 +79,7 @@ class TranscriptStatusResponse(BaseModel):
 
 class TranscriptListResponse(BaseModel):
     """Paginated list of transcripts."""
+
     items: list[TranscriptResponse]
     total: int
     page: int
@@ -86,6 +91,7 @@ class TranscriptListResponse(BaseModel):
 
 class MemoryNode(BaseModel):
     """A node in the memory file tree (file or directory)."""
+
     name: str
     type: str = Field(description="Either 'file' or 'directory'")
     path: str
@@ -96,6 +102,7 @@ class MemoryNode(BaseModel):
 
 class MemoryTreeResponse(BaseModel):
     """Response for ls (list directory) operations."""
+
     path: str
     type: str = "directory"
     children: list[MemoryNode]
@@ -103,6 +110,7 @@ class MemoryTreeResponse(BaseModel):
 
 class MemoryFileMetadata(BaseModel):
     """Parsed YAML frontmatter from a memory file."""
+
     type: Optional[str] = None
     entity: Optional[str] = None
     display_name: Optional[str] = None
@@ -115,6 +123,7 @@ class MemoryFileMetadata(BaseModel):
 
 class MemoryFileResponse(BaseModel):
     """Response for cat (read file) operations."""
+
     path: str
     type: str = "file"
     metadata: Optional[MemoryFileMetadata] = None
@@ -123,12 +132,14 @@ class MemoryFileResponse(BaseModel):
 
 class GrepMatch(BaseModel):
     """A single line match within a file."""
+
     line: int
     content: str
 
 
 class GrepFileResult(BaseModel):
     """Grep matches within a single file."""
+
     path: str
     matches: list[GrepMatch]
     relevance_score: Optional[float] = None
@@ -136,6 +147,7 @@ class GrepFileResult(BaseModel):
 
 class GrepResponse(BaseModel):
     """Response for grep (search) operations."""
+
     query: str
     scope: str
     total_matches: int
@@ -147,6 +159,7 @@ class GrepResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     """RFC 7807 Problem Details error response."""
+
     type: str
     title: str
     status: int

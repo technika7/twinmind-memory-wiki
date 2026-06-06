@@ -6,21 +6,17 @@ import enum
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import (
-    Column,
-    String,
-    Text,
-    DateTime,
-    Enum as SAEnum,
-    Index,
-)
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Column, DateTime
+from sqlalchemy import Enum as SAEnum
+from sqlalchemy import Index, String, Text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 from src.db.session import Base
 
 
 class TranscriptStatus(str, enum.Enum):
     """Processing status lifecycle for a transcript."""
+
     PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"
@@ -34,6 +30,7 @@ class Transcript(Base):
     Each transcript goes through a processing pipeline:
     pending → processing → completed/failed
     """
+
     __tablename__ = "transcripts"
 
     id = Column(
@@ -54,7 +51,7 @@ class Transcript(Base):
         SAEnum(
             TranscriptStatus,
             name="transcript_status",
-            values_callable=lambda obj: [e.value for e in obj]
+            values_callable=lambda obj: [e.value for e in obj],
         ),
         nullable=False,
         default=TranscriptStatus.PENDING,
@@ -79,9 +76,7 @@ class Transcript(Base):
     )
 
     # Indexes for common queries
-    __table_args__ = (
-        Index("ix_transcripts_created_at", "created_at"),
-    )
+    __table_args__ = (Index("ix_transcripts_created_at", "created_at"),)
 
     def __repr__(self) -> str:
         return f"<Transcript(id={self.id}, title='{self.title}', status={self.status})>"

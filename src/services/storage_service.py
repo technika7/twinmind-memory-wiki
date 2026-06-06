@@ -5,11 +5,9 @@ Provides file-system-like operations (list, read, write, search)
 over S3-compatible object storage.
 """
 
-import io
 import json
 import logging
 import re
-from datetime import datetime
 from typing import Optional
 
 import boto3
@@ -49,7 +47,9 @@ class StorageService:
 
     # ── Write Operations ───────────────────────────────────────
 
-    def write_file(self, path: str, content: str, content_type: str = "text/markdown") -> None:
+    def write_file(
+        self, path: str, content: str, content_type: str = "text/markdown"
+    ) -> None:
         """Write content to a file in the memory tree."""
         self.client.put_object(
             Bucket=self.bucket,
@@ -138,11 +138,13 @@ class StorageService:
                 dir_name = dir_path.split("/")[-1]
                 if dir_name.startswith("."):
                     continue
-                entries.append({
-                    "name": dir_name,
-                    "type": "directory",
-                    "path": "/" + dir_path,
-                })
+                entries.append(
+                    {
+                        "name": dir_name,
+                        "type": "directory",
+                        "path": "/" + dir_path,
+                    }
+                )
 
             # Files
             for obj in page.get("Contents", []):
@@ -152,7 +154,7 @@ class StorageService:
                     continue
 
                 # For recursive listing, extract directory entries
-                relative = key[len(prefix):]
+                relative = key[len(prefix) :]
                 parts = relative.split("/")
 
                 if len(parts) > 1 and delimiter == "":
@@ -161,19 +163,23 @@ class StorageService:
                     dir_path = prefix + dir_name
                     if dir_path not in seen_dirs:
                         seen_dirs.add(dir_path)
-                        entries.append({
-                            "name": dir_name,
-                            "type": "directory",
-                            "path": "/" + dir_path,
-                        })
+                        entries.append(
+                            {
+                                "name": dir_name,
+                                "type": "directory",
+                                "path": "/" + dir_path,
+                            }
+                        )
                 elif len(parts) == 1:
-                    entries.append({
-                        "name": parts[0],
-                        "type": "file",
-                        "path": "/" + key,
-                        "size": obj["Size"],
-                        "last_modified": obj["LastModified"].isoformat(),
-                    })
+                    entries.append(
+                        {
+                            "name": parts[0],
+                            "type": "file",
+                            "path": "/" + key,
+                            "size": obj["Size"],
+                            "last_modified": obj["LastModified"].isoformat(),
+                        }
+                    )
 
         # Deduplicate and sort: directories first, then files
         unique_entries = []
@@ -223,16 +229,20 @@ class StorageService:
                 matches = []
                 for line_num, line in enumerate(content.split("\n"), start=1):
                     if re.search(re.escape(query), line, flags):
-                        matches.append({
-                            "line": line_num,
-                            "content": line.strip(),
-                        })
+                        matches.append(
+                            {
+                                "line": line_num,
+                                "content": line.strip(),
+                            }
+                        )
 
                 if matches:
-                    results.append({
-                        "path": "/" + key,
-                        "matches": matches,
-                    })
+                    results.append(
+                        {
+                            "path": "/" + key,
+                            "matches": matches,
+                        }
+                    )
 
         return results
 

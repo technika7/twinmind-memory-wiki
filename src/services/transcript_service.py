@@ -3,13 +3,14 @@ Transcript service — business logic for transcript CRUD operations.
 """
 
 import logging
+from datetime import datetime, timezone
 from uuid import UUID
 
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models.transcript import Transcript, TranscriptStatus
 from src.models.schemas import TranscriptCreate
+from src.models.transcript import Transcript, TranscriptStatus
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class TranscriptService:
             title=data.title,
             content=data.content,
             participants=data.participants or [],
-            occurred_at=data.occurred_at,
+            occurred_at=data.occurred_at or datetime.now(timezone.utc),
             status=TranscriptStatus.PENDING,
         )
         self.db.add(transcript)
@@ -47,7 +48,9 @@ class TranscriptService:
         )
         return result.scalar_one_or_none()
 
-    async def list_all(self, page: int = 1, page_size: int = 20) -> tuple[list[Transcript], int]:
+    async def list_all(
+        self, page: int = 1, page_size: int = 20
+    ) -> tuple[list[Transcript], int]:
         """
         List transcripts with pagination.
 

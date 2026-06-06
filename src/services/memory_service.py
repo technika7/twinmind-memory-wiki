@@ -10,14 +10,14 @@ from typing import Optional
 
 import frontmatter
 
-from src.services.storage_service import StorageService
 from src.models.schemas import (
-    MemoryNode,
-    MemoryFileResponse,
-    MemoryFileMetadata,
     GrepFileResult,
     GrepMatch,
+    MemoryFileMetadata,
+    MemoryFileResponse,
+    MemoryNode,
 )
+from src.services.storage_service import StorageService
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,9 @@ class MemoryService:
     def __init__(self):
         self.storage = StorageService()
 
-    def list_directory(self, path: str = "/", depth: Optional[int] = None) -> list[MemoryNode]:
+    def list_directory(
+        self, path: str = "/", depth: Optional[int] = None
+    ) -> list[MemoryNode]:
         """
         List contents of a memory directory (ls equivalent).
 
@@ -36,7 +38,9 @@ class MemoryService:
             path: Directory path to list.
             depth: 0 for immediate children, None for recursive (immediate dirs).
         """
-        entries = self.storage.list_directory(path=path, depth=0 if depth == 0 else None)
+        entries = self.storage.list_directory(
+            path=path, depth=0 if depth == 0 else None
+        )
 
         nodes = []
         for entry in entries:
@@ -110,8 +114,7 @@ class MemoryService:
         results = []
         for raw in raw_results:
             matches = [
-                GrepMatch(line=m["line"], content=m["content"])
-                for m in raw["matches"]
+                GrepMatch(line=m["line"], content=m["content"]) for m in raw["matches"]
             ]
             results.append(
                 GrepFileResult(
