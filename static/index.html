@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TwinMind | Memory Wiki</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f1115;
+            --surface: rgba(255, 255, 255, 0.03);
+            --surface-hover: rgba(255, 255, 255, 0.08);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f0f0f0;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --accent-hover: #79c0ff;
+            --success: #3fb950;
+            --error: #f85149;
+            --radius: 12px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background gradient */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(88, 166, 255, 0.05) 0%, rgba(15, 17, 21, 0) 50%);
+            z-index: -1;
+            animation: pulse 15s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* Layout */
+        .sidebar {
+            width: 280px;
+            border-right: 1px solid var(--border);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            background: rgba(15, 17, 21, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 48px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Typography */
+        h1,
+        h2,
+        h3 {
+            margin-top: 0;
+            font-weight: 500;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 48px;
+            background: linear-gradient(90deg, #fff, var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Forms & Inputs */
+        .glass-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: var(--transition);
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        button {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: var(--surface-hover);
+            border-color: var(--accent);
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        button.primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+        }
+
+        /* Tree View */
+        .tree-node {
+            margin: 8px 0;
+        }
+
+        .tree-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+        }
+
+        .tree-item:hover {
+            background: var(--surface);
+            color: var(--text-primary);
+        }
+
+        .tree-children {
+            margin-left: 24px;
+            border-left: 1px solid var(--border);
+            padding-left: 12px;
+        }
+
+        /* Output View */
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            color: #e6edf3;
+            white-space: pre-wrap;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background: rgba(255, 171, 112, 0.1);
+            color: #ffab70;
+        }
+
+        .status-processing {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+        }
+
+        .status-completed {
+            background: rgba(63, 185, 80, 0.1);
+            color: #3fb950;
+        }
+
+        .status-failed {
+            background: rgba(248, 81, 73, 0.1);
+            color: #f85149;
+        }
+
+        /* Utilities */
+        .hidden {
+            display: none !important;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mt-4 {
+            margin-top: 24px;
+        }
+
+        .mb-2 {
+            margin-bottom: 12px;
+        }
+
+        .loader {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Search Results */
+        .search-result {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .search-result:last-child {
+            border-bottom: none;
+        }
+
+        .search-result:hover {
+            background: var(--surface);
+        }
+
+        .result-path {
+            color: var(--accent);
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+
+        .result-snippet {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .highlight {
+            color: #fff;
+            background: rgba(88, 166, 255, 0.3);
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+
+        /* Transcript Panel */
+        .transcript-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .transcript-row:last-child { border-bottom: none; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .transcript-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--text-secondary);
+        }
+
+        .transcript-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .transcript-title {
+            font-weight: 500;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        .transcript-sub {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .entity-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(88, 166, 255, 0.08);
+            color: var(--accent);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .entity-chip:hover {
+            background: rgba(88, 166, 255, 0.18);
+        }
+
+        .retry-btn {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            color: #ffab70;
+            border-color: rgba(255, 171, 112, 0.3);
+            background: rgba(255, 171, 112, 0.05);
+        }
+
+        .retry-btn:hover {
+            background: rgba(255, 171, 112, 0.15);
+            border-color: #ffab70;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar: Memory Tree -->
+    <div class="sidebar">
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+            TwinMind
+        </div>
+
+        <h3 class="mb-2"
+            style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);">
+            Memory Wiki</h3>
+
+        <div class="form-group">
+            <input type="text" id="searchInput" placeholder="Grep memories..." onkeyup="handleSearch(event)">
+        </div>
+
+        <div id="memoryTree" style="flex: 1; overflow-y: auto; margin-top: 12px;">
+            <div style="color: var(--text-secondary); font-size: 0.9rem; text-align: center; margin-top: 40px;">
+                <div class="loader" style="margin: 0 auto 12px; border-top-color: var(--accent);"></div>
+                Loading memories...
+            </div>
+        </div>
+
+        <button onclick="loadTree()" style="width: 100%; justify-content: center; margin-top: 16px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+            </svg>
+            Refresh Tree
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Ingest Section -->
+        <div class="glass-panel" id="ingestPanel">
+            <div class="flex-between mb-2">
+                <h2>Ingest Transcript</h2>
+                <span id="ingestStatus" class="status-badge hidden"></span>
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 0.95rem;">
+                Drop a raw conversation transcript here. TwinMind will use an LLM to extract entities, topics, and
+                relationships, merging them into the Memory Wiki.
+            </p>
+
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="tTitle" value="Weekly Sync with Engineering">
+            </div>
+
+            <div class="form-group">
+                <label>Participants (comma separated)</label>
+                <input type="text" id="tParticipants" value="Alice, Bob">
+            </div>
+
+            <div class="form-group">
+                <label>Transcript Content</label>
+                <textarea id="tContent">Alice: We should migrate to Postgres. Bob: Let's do it next week.</textarea>
+            </div>
+
+            <button class="primary mt-4" onclick="submitTranscript()" id="submitBtn">
+                <span>Process Memory</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Recent Transcripts Panel -->
+        <div class="glass-panel" id="transcriptsPanel">
+            <div class="flex-between mb-2">
+                <h2 style="font-size: 1.1rem;">Recent Transcripts</h2>
+                <button onclick="loadTranscripts()" style="padding: 6px 12px; font-size: 0.8rem;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+                        <path d="M21 3v5h-5"/>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+            <div id="transcriptsList">
+                <div style="text-align:center; padding: 20px;">
+                    <div class="loader" style="margin: 0 auto; border-top-color: var(--accent);"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Viewer Section -->
+        <div class="glass-panel hidden" id="viewerPanel">
+            <div class="flex-between mb-2">
+                <h2 id="viewerTitle">File Content</h2>
+                <button onclick="closeViewer()" style="padding: 6px 12px; font-size: 0.8rem;">Close</button>
+            </div>
+            <div class="code-block" id="viewerContent"></div>
+        </div>
+
+        <!-- Search Results Section -->
+        <div class="glass-panel hidden" id="searchPanel">
+            <div class="flex-between mb-2">
+                <h2>Search Results</h2>
+                <button onclick="closeSearch()" style="padding: 6px 12px; font-size: 0.8rem;">Clear</button>
+            </div>
+            <div id="searchResultsContainer"></div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE = '/api/v1';
+        let statusPollInterval = null;
+        let transcriptsPollInterval = null;
+
+        // --- Memory Tree (ls) ---
+
+        async function loadTree() {
+            const treeEl = document.getElementById('memoryTree');
+            try {
+                const res = await fetch(`${API_BASE}/memories/tree?path=/`);
+                const data = await res.json();
+
+                if (data.children && data.children.length > 0) {
+                    treeEl.innerHTML = renderTree(data.children);
+                } else {
+                    treeEl.innerHTML = '<div style="color: var(--text-secondary); text-align: center; margin-top: 40px;">No memories yet.</div>';
+                }
+            } catch (err) {
+                treeEl.innerHTML = `<div style="color: var(--error); padding: 12px;">Failed to load tree: ${err.message}</div>`;
+            }
+        }
+
+        function renderTree(nodes) {
+            let html = '';
+            for (const node of nodes) {
+                const isDir = node.type === 'directory';
+                const icon = isDir
+                    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>'
+                    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>';
+
+                const onClick = isDir ? `onclick="toggleDir(this, '${node.path}')"` : `onclick="viewFile('${node.path}')"`;
+
+                html += `
+                    <div class="tree-node">
+                        <div class="tree-item" ${onClick}>
+                            ${icon}
+                            <span>${node.name}</span>
+                        </div>
+                        ${isDir && node.children ? `<div class="tree-children">${renderTree(node.children)}</div>` : ''}
+                    </div>
+                `;
+            }
+            return html;
+        }
+
+        async function toggleDir(el, path) {
+            let parent = el.parentElement;
+            let childrenContainer = parent.querySelector('.tree-children');
+            if (childrenContainer) {
+                childrenContainer.classList.toggle('hidden');
+                return;
+            }
+            
+            childrenContainer = document.createElement('div');
+            childrenContainer.className = 'tree-children';
+            childrenContainer.innerHTML = '<div class="loader" style="margin: 4px 12px; width: 12px; height: 12px; border-top-color: var(--accent);"></div>';
+            parent.appendChild(childrenContainer);
+            
+            try {
+                const res = await fetch(`${API_BASE}/memories/tree?path=${encodeURIComponent(path)}`);
+                const data = await res.json();
+                if (data.children && data.children.length > 0) {
+                    childrenContainer.innerHTML = renderTree(data.children);
+                } else {
+                    childrenContainer.innerHTML = '<div style="color: var(--text-secondary); padding: 4px 12px; font-size: 0.8rem;">Empty</div>';
+                }
+            } catch (err) {
+                childrenContainer.innerHTML = `<div style="color: var(--error); padding: 4px 12px; font-size: 0.8rem;">Error</div>`;
+            }
+        }
+
+        // --- File Viewer (cat) ---
+
+        async function viewFile(path) {
+            const viewer = document.getElementById('viewerPanel');
+            const title = document.getElementById('viewerTitle');
+            const content = document.getElementById('viewerContent');
+
+            viewer.classList.remove('hidden');
+            title.textContent = path;
+            content.innerHTML = '<div class="loader"></div>';
+
+            // Scroll to top gently
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            try {
+                const res = await fetch(`${API_BASE}/memories/file?path=${encodeURIComponent(path)}`);
+                const text = await res.text();
+                
+                if (res.ok) {
+                    try {
+                        // Try to format it as pretty JSON
+                        const jsonData = JSON.parse(text);
+                        content.textContent = JSON.stringify(jsonData, null, 2);
+                    } catch (e) {
+                        content.textContent = text;
+                    }
+                } else {
+                    content.innerHTML = `<span style="color: var(--error)">Error: ${text}</span>`;
+                }
+            } catch (err) {
+                content.innerHTML = `<span style="color: var(--error)">Failed to read file: ${err.message}</span>`;
+            }
+        }
+
+        function closeViewer() {
+            document.getElementById('viewerPanel').classList.add('hidden');
+        }
+
+        // --- Search (grep) ---
+
+        async function handleSearch(e) {
+            if (e.key === 'Enter') {
+                const query = e.target.value.trim();
+                if (!query) return;
+
+                const panel = document.getElementById('searchPanel');
+                const container = document.getElementById('searchResultsContainer');
+
+                panel.classList.remove('hidden');
+                container.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="loader" style="margin: 0 auto; border-top-color: var(--accent);"></div></div>';
+
+                try {
+                    const res = await fetch(`${API_BASE}/memories/search?q=${encodeURIComponent(query)}`);
+                    const matches = await res.json();
+
+                    if (matches.length === 0) {
+                        container.innerHTML = '<div style="padding: 16px; color: var(--text-secondary);">No matches found.</div>';
+                        return;
+                    }
+
+                    let html = '';
+                    for (const match of matches) {
+                        // Very simple highlight
+                        const regex = new RegExp(`(${query})`, 'gi');
+                        const highlightedSnippet = match.snippet.replace(regex, '<span class="highlight">$1</span>');
+
+                        html += `
+                            <div class="search-result" onclick="viewFile('${match.path}')">
+                                <div class="result-path">${match.path}:${match.line_number}</div>
+                                <div class="result-snippet">${highlightedSnippet}</div>
+                            </div>
+                        `;
+                    }
+                    container.innerHTML = html;
+
+                } catch (err) {
+                    container.innerHTML = `<div style="padding: 16px; color: var(--error);">Search failed: ${err.message}</div>`;
+                }
+            }
+        }
+
+        function closeSearch() {
+            document.getElementById('searchPanel').classList.add('hidden');
+            document.getElementById('searchInput').value = '';
+        }
+
+        // --- Transcript Ingest ---
+
+        async function submitTranscript() {
+            const title = document.getElementById('tTitle').value.trim();
+            const content = document.getElementById('tContent').value.trim();
+            const participantsRaw = document.getElementById('tParticipants').value;
+
+            if (!title || !content) {
+                alert("Title and Content are required.");
+                return;
+            }
+
+            const participants = participantsRaw.split(',').map(p => p.trim()).filter(p => p);
+            const btn = document.getElementById('submitBtn');
+            const statusBadge = document.getElementById('ingestStatus');
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loader"></div> Processing...';
+            statusBadge.className = 'status-badge hidden';
+
+            try {
+                const res = await fetch(`${API_BASE}/transcripts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, content, participants })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // Start polling status
+                    document.getElementById('tTitle').value = '';
+                    document.getElementById('tContent').value = '';
+                    document.getElementById('tParticipants').value = '';
+
+                    pollStatus(data.links.status);
+                } else {
+                    alert(`Error: ${JSON.stringify(data)}`);
+                    resetSubmitButton();
+                }
+            } catch (err) {
+                alert(`Request failed: ${err.message}`);
+                resetSubmitButton();
+            }
+        }
+
+        function resetSubmitButton() {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = false;
+            btn.innerHTML = `<span>Process Memory</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>`;
+        }
+
+        function pollStatus(statusUrl) {
+            const badge = document.getElementById('ingestStatus');
+            badge.classList.remove('hidden');
+
+            if (statusPollInterval) clearInterval(statusPollInterval);
+
+            const check = async () => {
+                try {
+                    const res = await fetch(statusUrl);
+                    const data = await res.json();
+
+                    badge.textContent = data.status;
+                    badge.className = `status-badge status-${data.status}`;
+
+                    // Always refresh transcript list to reflect live status
+                    loadTranscripts();
+
+                    if (data.status === 'completed' || data.status === 'failed') {
+                        clearInterval(statusPollInterval);
+                        resetSubmitButton();
+
+                        if (data.status === 'completed') {
+                            loadTree(); // Refresh memory tree
+                        }
+                    }
+                } catch (err) {
+                    console.error("Poll error:", err);
+                }
+            };
+
+            check();
+            statusPollInterval = setInterval(check, 2000);
+        }
+
+        // --- Recent Transcripts ---
+
+        function formatRelTime(isoStr) {
+            const diff = Math.floor((Date.now() - new Date(isoStr)) / 1000);
+            if (diff < 60) return `${diff}s ago`;
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+            return new Date(isoStr).toLocaleDateString();
+        }
+
+        function entityPath(entity) {
+            // entity looks like "people/alice" → "/people/alice/profile.md"
+            const parts = entity.split('/');
+            if (parts.length === 2) return `/${entity}/profile.md`;
+            return `/${entity}`;
+        }
+
+        async function loadTranscripts() {
+            const list = document.getElementById('transcriptsList');
+            try {
+                const res = await fetch(`${API_BASE}/transcripts?page_size=10`);
+                const data = await res.json();
+                const items = data.items || [];
+
+                if (items.length === 0) {
+                    list.innerHTML = '<div style="color:var(--text-secondary); padding: 16px 0; font-size: 0.9rem;">No transcripts yet. Submit one above!</div>';
+                    return;
+                }
+
+                list.innerHTML = items.map(t => {
+                    const entities = (t.processed_entities || []);
+                    const entityChips = entities.slice(0, 5).map(e => {
+                        const label = e.split('/').pop().replace(/_/g, ' ');
+                        const path = entityPath(e);
+                        return `<span class="entity-chip" onclick="viewFile('${path}')" title="${e}">${label}</span>`;
+                    }).join('');
+                    const moreCount = entities.length > 5 ? `<span style="color:var(--text-secondary); font-size:0.75rem;">+${entities.length - 5} more</span>` : '';
+
+                    const retryBtn = t.status === 'failed'
+                        ? `<button class="retry-btn" onclick="retryTranscript('${t.id}')">↺ Retry</button>`
+                        : '';
+
+                    const spinner = (t.status === 'pending' || t.status === 'processing')
+                        ? `<div class="loader" style="width:10px; height:10px; border-top-color:var(--accent); flex-shrink:0;"></div>` : '';
+
+                    return `
+                        <div class="transcript-row" id="tr-${t.id}">
+                            <div class="transcript-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </div>
+                            <div class="transcript-meta">
+                                <div class="transcript-title">${t.title}</div>
+                                <div class="transcript-sub">
+                                    <span class="status-badge status-${t.status}">${t.status}</span>
+                                    ${spinner}
+                                    <span>${formatRelTime(t.created_at)}</span>
+                                    ${retryBtn}
+                                </div>
+                                ${entities.length > 0 ? `<div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px;">${entityChips}${moreCount}</div>` : ''}
+                            </div>
+                        </div>`;
+                }).join('');
+
+                // Auto-poll if any are still in progress
+                const hasActive = items.some(t => t.status === 'pending' || t.status === 'processing');
+                if (hasActive) {
+                    if (!transcriptsPollInterval) {
+                        transcriptsPollInterval = setInterval(async () => {
+                            await loadTranscripts();
+                        }, 3000);
+                    }
+                } else {
+                    if (transcriptsPollInterval) {
+                        clearInterval(transcriptsPollInterval);
+                        transcriptsPollInterval = null;
+                    }
+                }
+            } catch (err) {
+                list.innerHTML = `<div style="color:var(--error); padding:12px;">Failed to load: ${err.message}</div>`;
+            }
+        }
+
+        async function retryTranscript(id) {
+            try {
+                const res = await fetch(`${API_BASE}/transcripts/${id}/retry`, { method: 'POST' });
+                if (res.ok) {
+                    await loadTranscripts();
+                } else {
+                    alert('Retry failed — check logs.');
+                }
+            } catch (err) {
+                alert(`Retry error: ${err.message}`);
+            }
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTree();
+            loadTranscripts();
+        });
+    </script>
+</body>
+
+</html>
