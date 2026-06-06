@@ -1,0 +1,25 @@
+Hey Sarah, how was your weekend?
+
+Oh it was great! We went hiking at Point Reyes. The weather was perfect. Have you been there?
+
+Not yet, but it's on my list. Speaking of outdoors, did you hear about the team offsite? Lisa mentioned we might do a camping trip for the Q3 team building.
+
+Yeah! I'm so excited about that. Lisa's been planning it with Marcus. I think they're looking at Big Sur or Lake Tahoe.
+
+Lake Tahoe would be amazing. By the way, how's your onboarding going? It's been what, three weeks now?
+
+Almost a month actually! It's going really well. Everyone's been super helpful. I've been mostly ramping up on the recommendation engine codebase. It's complex but well-documented.
+
+That's good to hear. Who's been your onboarding buddy?
+
+Marcus, actually. He's been fantastic. Really patient and explains things well. He suggested I start with the feature extraction pipeline since that's where most of the bugs tend to surface.
+
+Smart approach. Marcus is great - he built most of that pipeline. If you need help with the model serving layer, come find me. That's my area.
+
+Thanks, I'll definitely take you up on that. Oh, I also wanted to ask - is the team lunch still happening on Fridays?
+
+Yep! This Friday we're trying that new Korean place on Castro Street. You should join us.
+
+Count me in! Alright, I should get back to this PR review. Talk later!
+
+See ya!

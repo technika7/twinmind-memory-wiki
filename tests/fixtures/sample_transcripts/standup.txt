@@ -1,0 +1,19 @@
+John: Good morning everyone. Quick update on Atlas - we're about 80% done with the migration. The API layer is complete, and we're now working on the data pipeline.
+
+Sarah: That's great progress. What's the timeline for the remaining 20%?
+
+John: I think we can wrap it up by end of Q3. The main blocker is the legacy data transformation, which is more complex than we anticipated. We've been refactoring the ETL scripts to handle the edge cases.
+
+Sarah: Got it. Let's make sure we document the API spec by next Friday. I'll need it for the client integration work.
+
+John: Will do. I'll have the spec ready by June 12th. I've already outlined the endpoints, just need to finalize the error handling section.
+
+Sarah: Perfect. Also, we decided to go with the microservices architecture for the new module. John, can you lead that effort?
+
+John: Absolutely. I'll start by setting up the service template and CI pipeline this week.
+
+Sarah: Great. One more thing - has anyone talked to the DevOps team about the staging environment?
+
+John: Yes, I spoke with Mike yesterday. He said they can have the new staging cluster ready by next Wednesday.
+
+Sarah: Excellent. Let's sync again on Thursday to review progress. Meeting adjourned.

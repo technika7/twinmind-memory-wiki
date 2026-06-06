@@ -1,0 +1,31 @@
+Alex: Alright, let's dive into the design review for the notification system. I've shared the architecture doc - has everyone had a chance to look at it?
+
+Priya: Yes, I reviewed it. I have some concerns about the message queue choice. You're proposing RabbitMQ, but have you considered using Redis Streams? Given our existing Redis infrastructure, it might reduce operational overhead.
+
+Alex: Good point. I chose RabbitMQ primarily for its dead letter queue support and routing capabilities. We need to route notifications to different channels - email, push, SMS - and RabbitMQ's exchange system handles that elegantly.
+
+Priya: Fair enough. What about the delivery guarantees? The doc mentions "at least once" delivery, but for billing notifications, we might need exactly-once semantics.
+
+Alex: You're right. For billing-critical notifications, I'm planning to implement an idempotency layer at the consumer level. Each notification gets a unique ID, and we check against a processed set before executing side effects.
+
+David: I want to bring up scalability. The current design shows a single consumer group. If we hit 10,000 notifications per minute during peak - which we saw last Black Friday - will this hold up?
+
+Alex: I've benchmarked the prototype, and with 4 consumer instances, we can handle 15,000 messages per minute with p99 latency under 200ms. The plan is to auto-scale consumers based on queue depth.
+
+Priya: What about the template engine? The doc is light on that section.
+
+Alex: Yes, that's intentional. I want to keep the template system simple initially - Jinja2 templates stored in S3, with a local cache. We can evolve to a more sophisticated system later. The key decision is: do we render on the producer side or consumer side?
+
+David: Consumer side, definitely. It keeps the message payload small and allows channel-specific formatting.
+
+Priya: Agreed. Let's also add a template versioning system from the start, even if it's simple. We've been burned before by template changes breaking production.
+
+Alex: Good call. I'll add a version field to the template metadata. Decision made: consumer-side rendering with versioned templates.
+
+David: One last thing - monitoring. We need to track delivery rates, bounce rates, and user engagement metrics. Can we integrate with our existing Datadog setup?
+
+Alex: Yes, I'll add StatsD metrics for all critical paths. Deliverability tracking is crucial.
+
+Priya: Great discussion. Let's reconvene next week with the updated design. Alex, can you also add a section on failure modes and recovery procedures?
+
+Alex: Will do. I'll have the updated doc by Monday.
