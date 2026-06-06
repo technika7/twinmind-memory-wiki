@@ -4,10 +4,17 @@ Alembic environment configuration.
 Supports both online (connected to DB) and offline (SQL generation) modes.
 """
 
+import sys
+import os
 from logging.config import fileConfig
+from pathlib import Path
 
 from sqlalchemy import engine_from_config, pool
 from alembic import context
+
+# Ensure the project root is in sys.path so 'src' is importable
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
 
 # Import models so Alembic can detect them
 from src.db.session import Base
