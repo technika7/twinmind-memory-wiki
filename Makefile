@@ -21,30 +21,30 @@ logs-worker:
 
 # ── Database ──────────────────────────────────────────────────
 migrate:
-	docker compose exec api alembic upgrade head
+	docker compose run --rm api alembic upgrade head
 
 migration:
-	docker compose exec api alembic revision --autogenerate -m "$(msg)"
+	docker compose run --rm api alembic revision --autogenerate -m "$(msg)"
 
 # ── Testing ───────────────────────────────────────────────────
 test:
-	docker compose exec api pytest tests/ -v --tb=short
+	docker compose run --rm api pytest tests/ -v --tb=short
 
 test-unit:
-	docker compose exec api pytest tests/unit/ -v --tb=short
+	docker compose run --rm api pytest tests/unit/ -v --tb=short
 
 test-integration:
-	docker compose exec api pytest tests/integration/ -v --tb=short
+	docker compose run --rm api pytest tests/integration/ -v --tb=short
 
 test-e2e:
-	docker compose exec api pytest tests/e2e/ -v --tb=short
+	docker compose run --rm api pytest tests/e2e/ -v --tb=short
 
 test-cov:
-	docker compose exec api pytest tests/ -v --cov=src --cov-report=term-missing
+	docker compose run --rm api pytest tests/ -v --cov=src --cov-report=term-missing
 
 # ── Utilities ─────────────────────────────────────────────────
 seed:
-	docker compose exec api python -m scripts.seed_data
+	docker compose run --rm api python -m scripts.seed_data
 
 shell:
 	docker compose exec api python -c "import IPython; IPython.start_ipython()" 2>/dev/null || docker compose exec api python

@@ -11,13 +11,13 @@ cp .env.example .env
 # Edit .env and set your LLM_API_KEY (Mistral by default)
 
 # 2. Start everything
-docker-compose up --build -d
+docker compose up --build -d
 
 # 3. Run database migrations
-docker-compose exec api alembic upgrade head
+docker compose run --rm api alembic upgrade head
 
 # 4. (Optional) Seed with sample transcripts
-docker-compose exec api python -m scripts.seed_data
+docker compose run --rm api python -m scripts.seed_data
 
 # 5. Verify
 curl http://localhost:8000/api/v1/health
