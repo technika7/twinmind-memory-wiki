@@ -10,13 +10,16 @@ git clone <repo-url> && cd twinmind-memory-wiki
 cp .env.example .env
 # Edit .env and set your LLM_API_KEY (Mistral by default)
 
-# 2. Start everything (migrations run automatically)
+# 2. Ensure entrypoint script is executable (resolves "permission denied" errors)
+chmod +x entrypoint.sh
+
+# 3. Start everything (migrations run automatically)
 docker compose up --build -d
 
-# 3. (Optional) Seed with sample transcripts
+# 4. (Optional) Seed with sample transcripts
 docker compose run --rm api python -m scripts.seed_data
 
-# 4. Verify
+# 5. Verify
 curl http://localhost:8000/api/v1/health
 ```
 
@@ -275,9 +278,16 @@ src/
 │   ├── prompts.py             # All prompt templates
 │   ├── extraction.py          # Structured output parsing
 │   └── merger.py              # Intelligent merge logic
-└── db/
-    ├── session.py             # Database session management
-    └── migrations/            # Alembic migrations
+├── db/
+│   ├── session.py             # Database session management
+│   └── migrations/            # Alembic migrations
+tests/
+├── conftest.py                # Shared fixtures
+├── unit/                      # Fast, no external dependencies
+├── integration/               # API + S3 with mocked services
+├── e2e/                       # Full pipeline tests
+├── fixtures/
+│   └── sample_transcripts/    # Test data
 static/
 └── index.html                 # Web UI for transcript submission and status
 ```
