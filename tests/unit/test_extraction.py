@@ -5,8 +5,7 @@ Tests the parsing of LLM structured output into typed domain objects,
 independent of the actual LLM calls.
 """
 
-import pytest
-from src.llm.extraction import MemoryExtractor, ExtractionResult
+from src.llm.extraction import ExtractionResult, MemoryExtractor
 
 
 class TestMemoryExtractor:

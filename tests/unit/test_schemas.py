@@ -4,17 +4,18 @@ Unit tests for Pydantic schema validation.
 Tests edge cases in request/response models.
 """
 
-import pytest
-from uuid import uuid4
 from datetime import datetime, timezone
+from uuid import uuid4
+
+import pytest
 from pydantic import ValidationError
 
 from src.models.schemas import (
+    ErrorResponse,
+    GrepMatch,
+    MemoryNode,
     TranscriptCreate,
     TranscriptResponse,
-    MemoryNode,
-    GrepMatch,
-    ErrorResponse,
 )
 
 
@@ -67,6 +68,7 @@ class TestTranscriptResponse:
 
     def test_from_attributes(self):
         """Verify from_attributes mode works for ORM objects."""
+
         # Simulate ORM-like object
         class FakeORM:
             id = uuid4()

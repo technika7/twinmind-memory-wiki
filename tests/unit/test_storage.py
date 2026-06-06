@@ -2,7 +2,6 @@
 Unit tests for storage service path normalization and logic.
 """
 
-import pytest
 from src.services.storage_service import StorageService
 
 
@@ -16,10 +15,15 @@ class TestPathNormalization:
         assert StorageService._normalize_path("///people/john") == "people/john"
 
     def test_collapses_double_slashes(self):
-        assert StorageService._normalize_path("people//john//profile.md") == "people/john/profile.md"
+        assert (
+            StorageService._normalize_path("people//john//profile.md")
+            == "people/john/profile.md"
+        )
 
     def test_resolves_parent_references(self):
-        assert StorageService._normalize_path("/people/../topics/atlas") == "topics/atlas"
+        assert (
+            StorageService._normalize_path("/people/../topics/atlas") == "topics/atlas"
+        )
 
     def test_resolves_current_dir_references(self):
         assert StorageService._normalize_path("/people/./john") == "people/john"
@@ -31,7 +35,10 @@ class TestPathNormalization:
         assert StorageService._normalize_path("/") == ""
 
     def test_complex_path(self):
-        assert StorageService._normalize_path("//people/../people/john_doe/./profile.md") == "people/john_doe/profile.md"
+        assert (
+            StorageService._normalize_path("//people/../people/john_doe/./profile.md")
+            == "people/john_doe/profile.md"
+        )
 
     def test_parent_beyond_root(self):
         """Parent references shouldn't go above root."""

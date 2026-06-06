@@ -5,18 +5,17 @@ Tests use a mocked StorageService to verify the API layer handles
 file tree operations correctly.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
-from datetime import datetime, timezone
+from unittest.mock import MagicMock, patch
 
+import pytest
 from fastapi.testclient import TestClient
 
 
 @pytest.fixture
 def memory_test_client():
     """Create a test client with mocked storage service."""
-    from src.main import app
     from src.db.session import get_db
+    from src.main import app
 
     async def override_get_db():
         yield MagicMock()
@@ -146,9 +145,7 @@ Senior Engineer at Acme Corp.
             instance = MockStorage.return_value
             instance.read_file.return_value = "# Simple File\n\nJust some content."
 
-            response = memory_test_client.get(
-                "/api/v1/memories/file?path=/simple.md"
-            )
+            response = memory_test_client.get("/api/v1/memories/file?path=/simple.md")
 
         assert response.status_code == 200
         data = response.json()
@@ -180,9 +177,7 @@ class TestMemorySearch:
             instance = MockStorage.return_value
             instance.search_files.return_value = mock_results
 
-            response = memory_test_client.get(
-                "/api/v1/memories/search?q=atlas&path=/"
-            )
+            response = memory_test_client.get("/api/v1/memories/search?q=atlas&path=/")
 
         assert response.status_code == 200
         data = response.json()
@@ -217,9 +212,7 @@ class TestMemorySearch:
             instance = MockStorage.return_value
             instance.search_files.return_value = []
 
-            memory_test_client.get(
-                "/api/v1/memories/search?q=test&path=/topics"
-            )
+            memory_test_client.get("/api/v1/memories/search?q=test&path=/topics")
 
             instance.search_files.assert_called_once()
             call_args = instance.search_files.call_args

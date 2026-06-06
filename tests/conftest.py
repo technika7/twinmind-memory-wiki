@@ -2,11 +2,11 @@
 Shared test fixtures and configuration.
 """
 
-import pytest
 import asyncio
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-from httpx import AsyncClient, ASGITransport
+import pytest
+
 
 # Use a test-specific event loop
 @pytest.fixture(scope="session")
@@ -27,10 +27,18 @@ def mock_llm_client():
                 "name": "John Doe",
                 "slug": "john_doe",
                 "facts": [
-                    {"text": "Senior Engineer at Acme Corp", "confidence": "high", "category": "role"},
-                    {"text": "Leads the Atlas project", "confidence": "high", "category": "role"},
+                    {
+                        "text": "Senior Engineer at Acme Corp",
+                        "confidence": "high",
+                        "category": "role",
+                    },
+                    {
+                        "text": "Leads the Atlas project",
+                        "confidence": "high",
+                        "category": "role",
+                    },
                 ],
-                "mentioned_in_context": "Gave a project update during standup"
+                "mentioned_in_context": "Gave a project update during standup",
             }
         ],
         "topics": [
@@ -39,14 +47,26 @@ def mock_llm_client():
                 "slug": "project_atlas",
                 "category": "project",
                 "facts": [
-                    {"text": "Migration initiative targeting Q3 completion", "confidence": "high"},
+                    {
+                        "text": "Migration initiative targeting Q3 completion",
+                        "confidence": "high",
+                    },
                 ],
                 "decisions": [
-                    {"text": "Use microservices architecture", "date": "2026-06-05", "participants": ["John Doe"]}
+                    {
+                        "text": "Use microservices architecture",
+                        "date": "2026-06-05",
+                        "participants": ["John Doe"],
+                    }
                 ],
                 "action_items": [
-                    {"text": "Complete API spec", "assignee": "John Doe", "due_date": "2026-06-12", "status": "open"}
-                ]
+                    {
+                        "text": "Complete API spec",
+                        "assignee": "John Doe",
+                        "due_date": "2026-06-12",
+                        "status": "open",
+                    }
+                ],
             }
         ],
         "event": {
@@ -54,11 +74,15 @@ def mock_llm_client():
             "date": "2026-06-05",
             "participants": ["John Doe", "Sarah Chen"],
             "summary": "Team discussed Atlas project progress and upcoming milestones.",
-            "key_outcomes": ["Atlas is 80% complete", "API spec due next week"]
+            "key_outcomes": ["Atlas is 80% complete", "API spec due next week"],
         },
         "relationships": [
-            {"from_entity": "john_doe", "to_entity": "project_atlas", "relationship_type": "works_on"}
-        ]
+            {
+                "from_entity": "john_doe",
+                "to_entity": "project_atlas",
+                "relationship_type": "works_on",
+            }
+        ],
     }
     return client
 
@@ -89,14 +113,14 @@ def sample_transcript_data():
 def sample_extraction_result():
     """Pre-built extraction result for testing merge and pipeline logic."""
     from src.llm.extraction import (
-        ExtractionResult,
-        PersonExtraction,
-        TopicExtraction,
-        EventExtraction,
-        Relationship,
-        Fact,
-        Decision,
         ActionItem,
+        Decision,
+        EventExtraction,
+        ExtractionResult,
+        Fact,
+        PersonExtraction,
+        Relationship,
+        TopicExtraction,
     )
 
     return ExtractionResult(
@@ -105,8 +129,16 @@ def sample_extraction_result():
                 name="John Doe",
                 slug="john_doe",
                 facts=[
-                    Fact(text="Senior Engineer at Acme Corp", confidence="high", category="role"),
-                    Fact(text="Leads the Atlas project", confidence="high", category="role"),
+                    Fact(
+                        text="Senior Engineer at Acme Corp",
+                        confidence="high",
+                        category="role",
+                    ),
+                    Fact(
+                        text="Leads the Atlas project",
+                        confidence="high",
+                        category="role",
+                    ),
                 ],
                 mentioned_in_context="Gave project update during standup",
             ),
@@ -114,7 +146,11 @@ def sample_extraction_result():
                 name="Sarah Chen",
                 slug="sarah_chen",
                 facts=[
-                    Fact(text="Works on client integrations", confidence="medium", category="role"),
+                    Fact(
+                        text="Works on client integrations",
+                        confidence="medium",
+                        category="role",
+                    ),
                 ],
                 mentioned_in_context="Asked questions about timeline and API spec",
             ),
@@ -124,7 +160,9 @@ def sample_extraction_result():
                 name="Project Atlas",
                 slug="project_atlas",
                 category="project",
-                facts=[Fact(text="Migration initiative, 80% complete", confidence="high")],
+                facts=[
+                    Fact(text="Migration initiative, 80% complete", confidence="high")
+                ],
                 decisions=[
                     Decision(
                         text="Use microservices architecture",
@@ -150,7 +188,11 @@ def sample_extraction_result():
             key_outcomes=["Atlas 80% complete", "API spec due June 12"],
         ),
         relationships=[
-            Relationship(from_entity="john_doe", to_entity="project_atlas", relationship_type="works_on"),
+            Relationship(
+                from_entity="john_doe",
+                to_entity="project_atlas",
+                relationship_type="works_on",
+            ),
         ],
     )
 

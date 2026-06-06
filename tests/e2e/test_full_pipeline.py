@@ -13,9 +13,7 @@ rather than CI, since it makes real LLM calls.
 For CI, use the integration tests with mocked LLM responses.
 """
 
-import pytest
-import time
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
 
@@ -34,8 +32,8 @@ class TestFullPipelineMocked:
         1. POST transcript → 202 with status "pending"
         2. GET status → returns the processing state
         """
-        from src.main import app
         from src.db.session import get_db
+        from src.main import app
 
         mock_session = MagicMock()
 
@@ -45,14 +43,15 @@ class TestFullPipelineMocked:
         app.dependency_overrides[get_db] = override_get_db
 
         try:
-            with patch("src.api.transcripts.process_transcript") as mock_task, \
-                 patch("src.api.transcripts.TranscriptService") as MockService:
+            with patch("src.api.transcripts.process_transcript") as mock_task, patch(
+                "src.api.transcripts.TranscriptService"
+            ) as MockService:
 
                 mock_task.delay = MagicMock()
 
                 # Create a fake transcript object
-                from uuid import uuid4
                 from datetime import datetime, timezone
+                from uuid import uuid4
 
                 fake_id = uuid4()
                 fake_transcript = MagicMock()
@@ -62,14 +61,16 @@ class TestFullPipelineMocked:
                 fake_transcript.participants = ["Alice", "Bob"]
                 fake_transcript.occurred_at = None
                 from src.models.transcript import TranscriptStatus
+
                 fake_transcript.status = TranscriptStatus.PENDING
-                
+
                 fake_transcript.error_message = None
                 fake_transcript.processed_entities = None
                 fake_transcript.created_at = datetime.now(timezone.utc)
                 fake_transcript.updated_at = datetime.now(timezone.utc)
 
                 from unittest.mock import AsyncMock
+
                 instance = MockService.return_value
                 instance.create = AsyncMock(return_value=fake_transcript)
                 instance.get_by_id = AsyncMock(return_value=fake_transcript)
@@ -109,8 +110,8 @@ class TestFullPipelineMocked:
         2. Read a specific file (cat)
         3. Search across files (grep)
         """
-        from src.main import app
         from src.db.session import get_db
+        from src.main import app
 
         async def override_get_db():
             yield MagicMock()
@@ -152,9 +153,7 @@ class TestFullPipelineMocked:
                         "matches": [{"line": 7, "content": "Engineer."}],
                     }
                 ]
-                response = client.get(
-                    "/api/v1/memories/search?q=engineer&path=/"
-                )
+                response = client.get("/api/v1/memories/search?q=engineer&path=/")
                 assert response.status_code == 200
                 data = response.json()
                 assert data["total_matches"] == 1

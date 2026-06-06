@@ -5,11 +5,11 @@ These tests use FastAPI's TestClient with a real database session
 (mocked for testing), verifying the full request/response cycle.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
-from uuid import uuid4
 from datetime import datetime, timezone
+from unittest.mock import AsyncMock, MagicMock, patch
+from uuid import uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 
 

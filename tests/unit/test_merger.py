@@ -2,11 +2,14 @@
 Unit tests for memory merger logic.
 """
 
-import pytest
-from unittest.mock import MagicMock
-
+from src.llm.extraction import (
+    ActionItem,
+    Decision,
+    Fact,
+    PersonExtraction,
+    TopicExtraction,
+)
 from src.llm.merger import MemoryMerger
-from src.llm.extraction import PersonExtraction, TopicExtraction, EventExtraction, Fact, Decision, ActionItem
 
 
 class TestMemoryMerger:
@@ -14,7 +17,9 @@ class TestMemoryMerger:
 
     def test_create_person_profile_calls_llm(self, mock_llm_client):
         """Verify person profile creation uses the LLM."""
-        mock_llm_client.generate.return_value = "---\ntype: person_profile\n---\n# John Doe"
+        mock_llm_client.generate.return_value = (
+            "---\ntype: person_profile\n---\n# John Doe"
+        )
         merger = MemoryMerger(llm_client=mock_llm_client)
 
         person = PersonExtraction(
@@ -24,14 +29,20 @@ class TestMemoryMerger:
             mentioned_in_context="Spoke during standup",
         )
 
-        result = merger.create_person_profile(person, "tr_123")
-        assert "John Doe" in mock_llm_client.generate.call_args[1]["user_prompt"] or \
-               "John Doe" in mock_llm_client.generate.call_args[0][1] if mock_llm_client.generate.call_args[0] else True
+        merger.create_person_profile(person, "tr_123")
+        assert (
+            "John Doe" in mock_llm_client.generate.call_args[1]["user_prompt"]
+            or "John Doe" in mock_llm_client.generate.call_args[0][1]
+            if mock_llm_client.generate.call_args[0]
+            else True
+        )
         mock_llm_client.generate.assert_called_once()
 
     def test_create_topic_overview_calls_llm(self, mock_llm_client):
         """Verify topic overview creation uses the LLM."""
-        mock_llm_client.generate.return_value = "---\ntype: topic_overview\n---\n# Atlas"
+        mock_llm_client.generate.return_value = (
+            "---\ntype: topic_overview\n---\n# Atlas"
+        )
         merger = MemoryMerger(llm_client=mock_llm_client)
 
         topic = TopicExtraction(
@@ -40,15 +51,19 @@ class TestMemoryMerger:
             category="project",
             facts=[Fact(text="Migration project", confidence="high")],
             decisions=[Decision(text="Use microservices", date="2026-06-05")],
-            action_items=[ActionItem(text="Write spec", assignee="John", status="open")],
+            action_items=[
+                ActionItem(text="Write spec", assignee="John", status="open")
+            ],
         )
 
-        result = merger.create_topic_overview(topic, "tr_123")
+        merger.create_topic_overview(topic, "tr_123")
         mock_llm_client.generate.assert_called_once()
 
     def test_merge_strips_code_fences(self, mock_llm_client):
         """Verify code fences are stripped from LLM merge output."""
-        mock_llm_client.generate.return_value = "```markdown\n---\ntype: test\n---\n# Content\n```"
+        mock_llm_client.generate.return_value = (
+            "```markdown\n---\ntype: test\n---\n# Content\n```"
+        )
         merger = MemoryMerger(llm_client=mock_llm_client)
 
         result = merger.merge_with_existing("existing", {"new": "facts"}, "tr_123")
