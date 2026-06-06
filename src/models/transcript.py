@@ -51,7 +51,11 @@ class Transcript(Base):
 
     # Processing status
     status = Column(
-        SAEnum(TranscriptStatus, name="transcript_status"),
+        SAEnum(
+            TranscriptStatus,
+            name="transcript_status",
+            values_callable=lambda obj: [e.value for e in obj]
+        ),
         nullable=False,
         default=TranscriptStatus.PENDING,
         index=True,
