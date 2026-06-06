@@ -11,17 +11,13 @@ import logging
 from datetime import datetime, timezone
 
 from src.llm.client import LLMClient
+from src.llm.extraction import EventExtraction, PersonExtraction, TopicExtraction
 from src.llm.prompts import (
-    MERGE_SYSTEM_PROMPT,
-    build_merge_user_prompt,
+    GENERATE_EVENT_PROMPT,
     GENERATE_PERSON_PROFILE_PROMPT,
     GENERATE_TOPIC_OVERVIEW_PROMPT,
-    GENERATE_EVENT_PROMPT,
-)
-from src.llm.extraction import (
-    PersonExtraction,
-    TopicExtraction,
-    EventExtraction,
+    MERGE_SYSTEM_PROMPT,
+    build_merge_user_prompt,
 )
 
 logger = logging.getLogger(__name__)
@@ -48,8 +44,7 @@ class MemoryMerger:
         tags = self._extract_tags_from_person(person)
 
         facts_text = "\n".join(
-            f"- {f.text} (confidence: {f.confidence})"
-            for f in person.facts
+            f"- {f.text} (confidence: {f.confidence})" for f in person.facts
         )
 
         user_prompt = (
@@ -84,14 +79,19 @@ class MemoryMerger:
         tags = [topic.category, topic.slug]
 
         facts_text = "\n".join(f"- {f.text}" for f in topic.facts)
-        decisions_text = "\n".join(
-            f"- {d.text} (date: {d.date or 'unknown'})"
-            for d in topic.decisions
-        ) or "None"
-        actions_text = "\n".join(
-            f"- [{a.status}] {a.text} (assignee: {a.assignee or 'unassigned'})"
-            for a in topic.action_items
-        ) or "None"
+        decisions_text = (
+            "\n".join(
+                f"- {d.text} (date: {d.date or 'unknown'})" for d in topic.decisions
+            )
+            or "None"
+        )
+        actions_text = (
+            "\n".join(
+                f"- [{a.status}] {a.text} (assignee: {a.assignee or 'unassigned'})"
+                for a in topic.action_items
+            )
+            or "None"
+        )
 
         user_prompt = (
             f"Create an overview for topic: {topic.name}\n"
@@ -126,7 +126,9 @@ class MemoryMerger:
         timestamp = datetime.now(timezone.utc).isoformat()
         date = event.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-        outcomes_text = "\n".join(f"- {o}" for o in event.key_outcomes) or "None recorded"
+        outcomes_text = (
+            "\n".join(f"- {o}" for o in event.key_outcomes) or "None recorded"
+        )
 
         user_prompt = (
             f"Create an event summary:\n"

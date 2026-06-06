@@ -126,6 +126,7 @@ def build_merge_user_prompt(
 ) -> str:
     """Build the user prompt for merging new facts into an existing memory file."""
     import json
+
     return f"""--- EXISTING MEMORY FILE ---
 {existing_content}
 --- END EXISTING FILE ---

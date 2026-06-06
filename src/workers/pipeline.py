@@ -8,7 +8,6 @@ Designed for idempotency: tracks which entities have been processed
 per transcript, so partial failures can resume safely.
 """
 
-import json
 import logging
 import re
 from datetime import datetime, timezone
@@ -16,12 +15,11 @@ from datetime import datetime, timezone
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from src.config import get_settings
 from src.db.session import sync_engine
-from src.models.transcript import Transcript, TranscriptStatus
 from src.llm.client import LLMClient
-from src.llm.extraction import MemoryExtractor, ExtractionResult
+from src.llm.extraction import ExtractionResult, MemoryExtractor
 from src.llm.merger import MemoryMerger
+from src.models.transcript import Transcript, TranscriptStatus
 from src.services.storage_service import StorageService
 
 logger = logging.getLogger(__name__)
@@ -135,11 +133,15 @@ class MemoryPipeline:
             # Merge with existing
             new_facts = {
                 "name": person.name,
-                "facts": [{"text": f.text, "confidence": f.confidence, "category": f.category}
-                         for f in person.facts],
+                "facts": [
+                    {"text": f.text, "confidence": f.confidence, "category": f.category}
+                    for f in person.facts
+                ],
                 "context": person.mentioned_in_context,
             }
-            updated = self.merger.merge_with_existing(existing, new_facts, transcript_id)
+            updated = self.merger.merge_with_existing(
+                existing, new_facts, transcript_id
+            )
             self.storage.write_file(profile_path, updated)
             logger.info("Updated person profile: %s", profile_path)
             return "updated"
@@ -158,17 +160,26 @@ class MemoryPipeline:
             new_facts = {
                 "name": topic.name,
                 "category": topic.category,
-                "facts": [{"text": f.text, "confidence": f.confidence} for f in topic.facts],
+                "facts": [
+                    {"text": f.text, "confidence": f.confidence} for f in topic.facts
+                ],
                 "decisions": [
                     {"text": d.text, "date": d.date, "participants": d.participants}
                     for d in topic.decisions
                 ],
                 "action_items": [
-                    {"text": a.text, "assignee": a.assignee, "due_date": a.due_date, "status": a.status}
+                    {
+                        "text": a.text,
+                        "assignee": a.assignee,
+                        "due_date": a.due_date,
+                        "status": a.status,
+                    }
                     for a in topic.action_items
                 ],
             }
-            updated = self.merger.merge_with_existing(existing, new_facts, transcript_id)
+            updated = self.merger.merge_with_existing(
+                existing, new_facts, transcript_id
+            )
             self.storage.write_file(overview_path, updated)
             logger.info("Updated topic overview: %s", overview_path)
             return "updated"
@@ -184,7 +195,9 @@ class MemoryPipeline:
 
     # ── Meta Index ─────────────────────────────────────────────
 
-    def _update_meta_index(self, extraction: ExtractionResult, transcript_id: str) -> None:
+    def _update_meta_index(
+        self, extraction: ExtractionResult, transcript_id: str
+    ) -> None:
         """Update the _meta/index.json with current state of all memory files."""
         index_path = "_meta/index.json"
         existing_index = self.storage.read_json(index_path) or {
@@ -258,9 +271,7 @@ class MemoryPipeline:
         """Fetch transcript and set status to PROCESSING."""
         with Session(sync_engine) as session:
             transcript = session.execute(
-                select(Transcript).where(
-                    Transcript.id == transcript_id
-                )
+                select(Transcript).where(Transcript.id == transcript_id)
             ).scalar_one_or_none()
 
             if transcript is None:

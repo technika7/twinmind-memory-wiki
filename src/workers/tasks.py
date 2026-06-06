@@ -9,7 +9,6 @@ Each task is designed for:
 
 import logging
 
-from celery import shared_task
 from celery.exceptions import SoftTimeLimitExceeded
 
 from src.workers.celery_app import celery_app
@@ -70,8 +69,7 @@ def process_transcript(self, transcript_id: str) -> dict:
         )
         pipeline = MemoryPipeline()
         pipeline.mark_failed(
-            transcript_id,
-            "Processing timed out — transcript may be too long"
+            transcript_id, "Processing timed out — transcript may be too long"
         )
         raise
 

@@ -70,6 +70,7 @@ class Relationship:
 @dataclass
 class ExtractionResult:
     """Complete extraction result from a single transcript."""
+
     people: list[PersonExtraction] = field(default_factory=list)
     topics: list[TopicExtraction] = field(default_factory=list)
     event: EventExtraction | None = None
@@ -124,12 +125,14 @@ class MemoryExtractor:
                 )
                 for f in p.get("facts", [])
             ]
-            result.people.append(PersonExtraction(
-                name=p.get("name", "Unknown"),
-                slug=self._ensure_slug(p.get("slug", p.get("name", "unknown"))),
-                facts=facts,
-                mentioned_in_context=p.get("mentioned_in_context", ""),
-            ))
+            result.people.append(
+                PersonExtraction(
+                    name=p.get("name", "Unknown"),
+                    slug=self._ensure_slug(p.get("slug", p.get("name", "unknown"))),
+                    facts=facts,
+                    mentioned_in_context=p.get("mentioned_in_context", ""),
+                )
+            )
 
         # Parse topics
         for t in raw.get("topics", []):
@@ -154,14 +157,16 @@ class MemoryExtractor:
                 )
                 for a in t.get("action_items", [])
             ]
-            result.topics.append(TopicExtraction(
-                name=t.get("name", "Unknown"),
-                slug=self._ensure_slug(t.get("slug", t.get("name", "unknown"))),
-                category=t.get("category", "concept"),
-                facts=facts,
-                decisions=decisions,
-                action_items=action_items,
-            ))
+            result.topics.append(
+                TopicExtraction(
+                    name=t.get("name", "Unknown"),
+                    slug=self._ensure_slug(t.get("slug", t.get("name", "unknown"))),
+                    category=t.get("category", "concept"),
+                    facts=facts,
+                    decisions=decisions,
+                    action_items=action_items,
+                )
+            )
 
         # Parse event
         event_data = raw.get("event")
@@ -176,11 +181,13 @@ class MemoryExtractor:
 
         # Parse relationships
         for r in raw.get("relationships", []):
-            result.relationships.append(Relationship(
-                from_entity=r.get("from_entity", ""),
-                to_entity=r.get("to_entity", ""),
-                relationship_type=r.get("relationship_type", "related"),
-            ))
+            result.relationships.append(
+                Relationship(
+                    from_entity=r.get("from_entity", ""),
+                    to_entity=r.get("to_entity", ""),
+                    relationship_type=r.get("relationship_type", "related"),
+                )
+            )
 
         logger.info(
             "Extraction complete: %d people, %d topics, %d relationships",
@@ -194,6 +201,7 @@ class MemoryExtractor:
     def _ensure_slug(name: str) -> str:
         """Generate a URL-safe slug from a name."""
         import re
+
         slug = name.lower().strip()
         slug = re.sub(r"[^a-z0-9]+", "_", slug)
         slug = slug.strip("_")
