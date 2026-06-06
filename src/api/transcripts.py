@@ -13,13 +13,13 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db.session import get_db
 from src.api.errors import NotFoundError
+from src.db.session import get_db
 from src.models.schemas import (
     TranscriptCreate,
     TranscriptCreatedResponse,
-    TranscriptResponse,
     TranscriptListResponse,
+    TranscriptResponse,
     TranscriptStatusResponse,
 )
 from src.services.transcript_service import TranscriptService
@@ -120,5 +120,44 @@ async def get_transcript_status(
 
     if transcript is None:
         raise NotFoundError("Transcript", str(transcript_id))
+
+    return TranscriptStatusResponse.model_validate(transcript)
+
+
+@router.post(
+    "/{transcript_id}/retry",
+    response_model=TranscriptStatusResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Retry a failed transcript",
+    description="Resets a failed transcript back to pending and re-enqueues the memory generation job.",
+)
+async def retry_transcript(
+    transcript_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    from src.models.transcript import TranscriptStatus
+
+    service = TranscriptService(db)
+    transcript = await service.get_by_id(transcript_id)
+
+    if transcript is None:
+        raise NotFoundError("Transcript", str(transcript_id))
+
+    if transcript.status not in (TranscriptStatus.FAILED, TranscriptStatus.PENDING):
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot retry transcript with status '{transcript.status.value}'"
+        )
+
+    # Reset status and re-enqueue
+    transcript.status = TranscriptStatus.PENDING
+    transcript.error_message = None
+    transcript.processed_entities = []
+    await db.flush()
+    await db.refresh(transcript)
+
+    process_transcript.delay(str(transcript.id))
+    logger.info("Re-enqueued transcript %s for retry", transcript.id)
 
     return TranscriptStatusResponse.model_validate(transcript)

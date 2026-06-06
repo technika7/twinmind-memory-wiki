@@ -11,12 +11,8 @@ import logging
 from fastapi import APIRouter, Query
 
 from src.api.errors import NotFoundError
+from src.models.schemas import GrepResponse, MemoryFileResponse, MemoryTreeResponse
 from src.services.memory_service import MemoryService
-from src.models.schemas import (
-    MemoryTreeResponse,
-    MemoryFileResponse,
-    GrepResponse,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +30,9 @@ router = APIRouter()
 )
 async def list_tree(
     path: str = Query("/", description="Directory path to list"),
-    depth: int | None = Query(None, ge=0, description="0 for immediate children only, None for recursive"),
+    depth: int | None = Query(
+        None, ge=0, description="0 for immediate children only, None for recursive"
+    ),
 ):
     service = MemoryService()
     children = service.list_directory(path=path, depth=depth)

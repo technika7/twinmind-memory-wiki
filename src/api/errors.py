@@ -3,15 +3,17 @@ RFC 7807 Problem Details error handlers.
 """
 
 import logging
+
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
 
 
 class NotFoundError(Exception):
     """Resource not found."""
+
     def __init__(self, resource: str, identifier: str):
         self.resource = resource
         self.identifier = identifier
@@ -20,6 +22,7 @@ class NotFoundError(Exception):
 
 class ConflictError(Exception):
     """Resource conflict (e.g., duplicate processing)."""
+
     def __init__(self, detail: str):
         self.detail = detail
         super().__init__(detail)
