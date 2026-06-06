@@ -4,11 +4,12 @@ Revision ID: 001
 Revises:
 Create Date: 2026-06-06
 """
+
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID, JSONB, ENUM
+from alembic import op
+from sqlalchemy.dialects.postgresql import ENUM, JSONB, UUID
 
 revision: str = "001"
 down_revision: Union[str, None] = None
@@ -17,7 +18,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 # Define the enum type once, using the PG-native variant
 transcript_status_enum = ENUM(
-    "pending", "processing", "completed", "failed",
+    "pending",
+    "processing",
+    "completed",
+    "failed",
     name="transcript_status",
     create_type=False,
 )
@@ -48,8 +52,18 @@ def upgrade() -> None:
         ),
         sa.Column("error_message", sa.Text(), nullable=True),
         sa.Column("processed_entities", JSONB(), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
     )
 
     op.create_index("ix_transcripts_status", "transcripts", ["status"])

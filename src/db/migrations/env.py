@@ -5,20 +5,19 @@ Supports both online (connected to DB) and offline (SQL generation) modes.
 """
 
 import sys
-import os
 from logging.config import fileConfig
 from pathlib import Path
 
-from sqlalchemy import engine_from_config, pool
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
 # Ensure the project root is in sys.path so 'src' is importable
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 
 # Import models so Alembic can detect them
-from src.db.session import Base
-from src.models.transcript import Transcript  # noqa: F401
+from src.db.session import Base  # noqa: E402
+from src.models.transcript import Transcript  # noqa: E402, F401
 
 config = context.config
 if config.config_file_name is not None:

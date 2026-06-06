@@ -2,9 +2,10 @@
 Database session management using SQLAlchemy async engine.
 """
 
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
+
 from src.config import get_settings
 
 settings = get_settings()
@@ -35,6 +36,7 @@ async_session_factory = async_sessionmaker(
 
 class Base(DeclarativeBase):
     """Declarative base for all SQLAlchemy models."""
+
     pass
 
 

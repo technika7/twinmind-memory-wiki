@@ -26,6 +26,13 @@ migrate:
 migration:
 	docker compose run --rm api alembic revision --autogenerate -m "$(msg)"
 
+# ── Linting & Formatting ─────────────────────────────────────────
+lint:
+	docker compose run --rm api bash -c "pip install black isort flake8 && black src tests && isort src tests && flake8 src tests"
+
+lint-check:
+	docker compose run --rm api bash -c "pip install black isort flake8 && black --check src tests && isort --check src tests && flake8 src tests"
+
 # ── Testing ───────────────────────────────────────────────────
 test:
 	docker compose run --rm api pytest tests/ -v --tb=short

@@ -4,8 +4,9 @@ Application configuration via Pydantic Settings.
 All values are loaded from environment variables (or .env file).
 """
 
-from pydantic_settings import BaseSettings
 from functools import lru_cache
+
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -16,8 +17,12 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
 
     # ── Database ───────────────────────────────────────────────
-    database_url: str = "postgresql+asyncpg://memorywiki:memorywiki@postgres:5432/memorywiki"
-    database_url_sync: str = "postgresql+psycopg2://memorywiki:memorywiki@postgres:5432/memorywiki"
+    database_url: str = (
+        "postgresql+asyncpg://memorywiki:memorywiki@postgres:5432/memorywiki"
+    )
+    database_url_sync: str = (
+        "postgresql+psycopg2://memorywiki:memorywiki@postgres:5432/memorywiki"
+    )
 
     # ── Redis / Celery ─────────────────────────────────────────
     celery_broker_url: str = "redis://redis:6379/0"
@@ -31,8 +36,9 @@ class Settings(BaseSettings):
     s3_region: str = "us-east-1"
 
     # ── LLM ────────────────────────────────────────────────────
-    openai_api_key: str = ""
+    llm_api_key: str = ""
     llm_model: str = "gpt-4o"
+    llm_base_url: str | None = None
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 
