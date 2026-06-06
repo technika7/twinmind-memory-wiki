@@ -130,6 +130,7 @@ When a new transcript mentions "John" who is already in memory, the system **mer
 | `GET` | `/api/v1/transcripts` | List all transcripts (paginated) |
 | `GET` | `/api/v1/transcripts/:id` | Get transcript by ID |
 | `GET` | `/api/v1/transcripts/:id/status` | Check memory generation status |
+| `POST` | `/api/v1/transcripts/:id/retry` | Re-enqueue a failed transcript |
 
 **Why 202 Accepted?** Memory generation is async. Returning 201 would imply the resource is fully created, but memories haven't been generated yet. 202 accurately communicates "accepted for processing."
 
@@ -186,7 +187,7 @@ All errors follow [RFC 7807 (Problem Details)](https://tools.ietf.org/html/rfc78
 The spec says "cloud object storage." A local filesystem would be simpler but doesn't demonstrate cloud infrastructure understanding. MinIO provides a real S3-compatible API that runs locally — same code works against AWS S3 in production.
 
 ### Celery + Redis over background threads
-FastAPI's `BackgroundTasks` would be simpler but offers zero reliability — if the process crashes, the task is gone forever. Celery provides retries, dead letter queues, monitoring (Flower), and horizontal scaling. — all essential for a system where data loss is unacceptable.
+FastAPI's `BackgroundTasks` would be simpler but offers zero reliability — if the process crashes, the task is gone forever. Celery provides retries, dead letter queues, monitoring (Flower), and horizontal scaling — all essential for a system where data loss is unacceptable.
 
 ### Markdown + YAML frontmatter over pure JSON
 JSON would be easier to parse but harder to read and grep. Markdown is the native language of LLMs and humans alike. YAML frontmatter gives us structured metadata without sacrificing readability.
@@ -234,6 +235,7 @@ make test-cov
 6. **Multi-tenant support** — User-scoped memory trees with auth
 7. **Chunking for long transcripts** — Split transcripts exceeding the LLM context window
 8. **Memory decay** — Confidence scores that decrease over time for unconfirmed facts
+9. **Input guardrails** — Max transcript length enforcement, content validation, and LLM output schema enforcement (e.g. reject extractions that return no entities or malformed JSON)
 
 ---
 
