@@ -195,7 +195,40 @@ class MemoryExtractor:
             len(result.topics),
             len(result.relationships),
         )
+
+        self._validate_extraction(result)
         return result
+
+    def _validate_extraction(self, result: ExtractionResult) -> None:
+        """
+        Validate extraction output quality.
+
+        Raises ValueError for extraction results that are clearly unusable,
+        so the pipeline can mark the transcript as failed with a clear message.
+        """
+        total_entities = len(result.people) + len(result.topics) + (
+            1 if result.event else 0
+        )
+        if total_entities == 0:
+            raise ValueError(
+                "LLM extraction produced no entities (no people, topics, or events). "
+                "The transcript may be too short or not contain meaningful content."
+            )
+
+        # Validate entity names aren't empty
+        for person in result.people:
+            if not person.name or not person.name.strip():
+                logger.warning("Skipping person with empty name")
+                result.people.remove(person)
+            elif len(person.slug) > 100:
+                person.slug = person.slug[:100]
+
+        for topic in result.topics:
+            if not topic.name or not topic.name.strip():
+                logger.warning("Skipping topic with empty name")
+                result.topics.remove(topic)
+            elif len(topic.slug) > 100:
+                topic.slug = topic.slug[:100]
 
     @staticmethod
     def _ensure_slug(name: str) -> str:

@@ -144,10 +144,16 @@ async def retry_transcript(
         raise NotFoundError("Transcript", str(transcript_id))
 
     if transcript.status not in (TranscriptStatus.FAILED, TranscriptStatus.PENDING):
-        from fastapi import HTTPException
-        raise HTTPException(
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
             status_code=400,
-            detail=f"Cannot retry transcript with status '{transcript.status.value}'"
+            content={
+                "type": "https://memorywiki.dev/errors/bad-request",
+                "title": "Invalid Transcript State",
+                "status": 400,
+                "detail": f"Cannot retry transcript with status '{transcript.status.value}'. Only 'failed' or 'pending' transcripts can be retried.",
+                "instance": f"/api/v1/transcripts/{transcript_id}/retry",
+            },
         )
 
     # Reset status and re-enqueue

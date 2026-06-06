@@ -24,12 +24,14 @@ class TranscriptCreate(BaseModel):
     content: str = Field(
         ...,
         min_length=1,
-        description="The full text of the conversation transcript.",
+        max_length=50_000,
+        description="The full text of the conversation transcript (max 50K characters).",
         examples=["John: The Atlas migration is 80% done..."],
     )
     participants: Optional[list[str]] = Field(
         default=None,
-        description="Optional list of participant names as hints for the LLM.",
+        max_length=50,
+        description="Optional list of participant names as hints for the LLM (max 50).",
         examples=[["John Doe", "Sarah Chen"]],
     )
     occurred_at: Optional[datetime] = Field(
