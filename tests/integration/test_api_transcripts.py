@@ -189,3 +189,67 @@ class TestGetTranscript:
         data = response.json()
         assert data["type"] == "https://memorywiki.dev/errors/not-found"
         assert "Transcript" in data["title"]
+
+
+class TestRetryTranscript:
+    """Test POST /api/v1/transcripts/:id/retry."""
+
+    def test_retry_nonexistent_returns_404(self, test_client):
+        """Should return 404 for a nonexistent transcript."""
+        client, db, _ = test_client
+        fake_id = uuid4()
+
+        with patch("src.api.transcripts.TranscriptService") as MockService:
+            instance = MockService.return_value
+            instance.get_by_id = AsyncMock(return_value=None)
+
+            response = client.post(f"/api/v1/transcripts/{fake_id}/retry")
+
+        assert response.status_code == 404
+
+    def test_retry_completed_returns_400(self, test_client):
+        """Should return RFC 7807 error when retrying a completed transcript."""
+        client, db, mock_task = test_client
+        fake_id = uuid4()
+
+        fake_transcript = MagicMock()
+        fake_transcript.id = fake_id
+        fake_transcript.status = MagicMock()
+        fake_transcript.status.value = "completed"
+        # Make status comparison work
+        from src.models.transcript import TranscriptStatus
+        fake_transcript.status = TranscriptStatus.COMPLETED
+
+        with patch("src.api.transcripts.TranscriptService") as MockService:
+            instance = MockService.return_value
+            instance.get_by_id = AsyncMock(return_value=fake_transcript)
+
+            response = client.post(f"/api/v1/transcripts/{fake_id}/retry")
+
+        assert response.status_code == 400
+        data = response.json()
+        assert data["type"] == "https://memorywiki.dev/errors/bad-request"
+
+    def test_retry_failed_returns_202(self, test_client):
+        """Should reset a failed transcript and re-enqueue it."""
+        client, db, mock_task = test_client
+        fake_id = uuid4()
+
+        from src.models.transcript import TranscriptStatus
+
+        fake_transcript = MagicMock()
+        fake_transcript.id = fake_id
+        fake_transcript.status = TranscriptStatus.FAILED
+        fake_transcript.error_message = "Some error"
+        fake_transcript.processed_entities = ["people/alice"]
+        fake_transcript.created_at = datetime.now(timezone.utc)
+        fake_transcript.updated_at = datetime.now(timezone.utc)
+
+        with patch("src.api.transcripts.TranscriptService") as MockService:
+            instance = MockService.return_value
+            instance.get_by_id = AsyncMock(return_value=fake_transcript)
+
+            response = client.post(f"/api/v1/transcripts/{fake_id}/retry")
+
+        assert response.status_code == 202
+        mock_task.delay.assert_called_with(str(fake_id))

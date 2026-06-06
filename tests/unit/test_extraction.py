@@ -5,6 +5,8 @@ Tests the parsing of LLM structured output into typed domain objects,
 independent of the actual LLM calls.
 """
 
+import pytest
+
 from src.llm.extraction import ExtractionResult, MemoryExtractor
 
 
@@ -60,7 +62,7 @@ class TestMemoryExtractor:
         assert rel.relationship_type == "works_on"
 
     def test_extract_handles_empty_response(self, mock_llm_client):
-        """Verify graceful handling of empty extraction."""
+        """Verify that empty extraction raises ValueError (guardrail)."""
         mock_llm_client.generate_json.return_value = {
             "people": [],
             "topics": [],
@@ -69,11 +71,9 @@ class TestMemoryExtractor:
         }
 
         extractor = MemoryExtractor(llm_client=mock_llm_client)
-        result = extractor.extract("Minimal transcript")
 
-        assert len(result.people) == 0
-        assert len(result.topics) == 0
-        assert result.event is None
+        with pytest.raises(ValueError, match="no entities"):
+            extractor.extract("Minimal transcript")
 
     def test_extract_handles_missing_fields(self, mock_llm_client):
         """Verify fallback defaults for missing fields in LLM output."""

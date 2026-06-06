@@ -62,6 +62,25 @@ class TestTranscriptCreate:
         )
         assert "日本語" in data.title
 
+    def test_content_max_length(self):
+        """Content must not exceed 50,000 characters."""
+        with pytest.raises(ValidationError):
+            TranscriptCreate(title="Test", content="x" * 50_001)
+
+    def test_content_at_max_length(self):
+        """Content at exactly 50,000 characters should pass."""
+        data = TranscriptCreate(title="Test", content="x" * 50_000)
+        assert len(data.content) == 50_000
+
+    def test_participants_max_items(self):
+        """Participants list must not exceed 50 items."""
+        with pytest.raises(ValidationError):
+            TranscriptCreate(
+                title="Test",
+                content="Hello",
+                participants=[f"Person{i}" for i in range(51)],
+            )
+
 
 class TestTranscriptResponse:
     """Test transcript response schema."""
@@ -78,6 +97,7 @@ class TestTranscriptResponse:
             occurred_at = None
             status = "pending"
             error_message = None
+            processed_entities = None
             created_at = datetime.now(timezone.utc)
             updated_at = datetime.now(timezone.utc)
 
