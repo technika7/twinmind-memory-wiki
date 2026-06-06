@@ -6,24 +6,21 @@ A service that ingests conversation transcripts, generates structured memories u
 
 ```bash
 # 1. Clone and configure
-git clone <repo-url> && cd memory-wiki
+git clone <repo-url> && cd twinmind-memory-wiki
 cp .env.example .env
 # Edit .env and set your LLM_API_KEY (Mistral by default)
 
-# 2. Start everything
+# 2. Start everything (migrations run automatically)
 docker compose up --build -d
 
-# 3. Run database migrations
-docker compose run --rm api alembic upgrade head
-
-# 4. (Optional) Seed with sample transcripts
+# 3. (Optional) Seed with sample transcripts
 docker compose run --rm api python -m scripts.seed_data
 
-# 5. Verify
+# 4. Verify
 curl http://localhost:8000/api/v1/health
 ```
 
-**That's it.** The API is at `http://localhost:8000`, MinIO console at `http://localhost:9001` (minioadmin/minioadmin).
+**That's it.** The API is at `http://localhost:8000`, the web UI at `http://localhost:8000/` (submit transcripts and watch memory generation live), and the MinIO console at `http://localhost:9001` (minioadmin/minioadmin).
 
 ---
 
@@ -169,6 +166,7 @@ All errors follow [RFC 7807 (Problem Details)](https://tools.ietf.org/html/rfc78
 | **Late acknowledgment** | Tasks ack only after completion; crashes re-queue the task |
 | **Timeouts** | Soft limit (120s) raises exception; hard limit (180s) kills worker |
 | **Status tracking** | `pending → processing → completed/failed` with error details |
+| **Input guardrails** | Max content length (50K chars), participant limits, LLM output validation |
 
 ### Pipeline Flow
 
@@ -178,6 +176,17 @@ All errors follow [RFC 7807 (Problem Details)](https://tools.ietf.org/html/rfc78
 4. **For each entity** → Check if exists in S3 → Create new or merge with existing
 5. **Update `_meta/index.json`** → Entity registry for fast lookups
 6. **Mark `completed`** → Status queryable via API
+
+---
+
+## Assumptions
+
+1. **Single-user system** — No authentication or multi-tenancy. The memory tree is shared and unsegmented. Multi-tenant support is listed as a future enhancement.
+2. **Transcripts are conversation text** — The system expects human-readable dialogue with identifiable speakers (e.g., "Alice: ..."). It does not handle audio, video, or non-conversational formats.
+3. **LLM availability** — The pipeline assumes the LLM provider is generally available. Transient failures are handled with exponential backoff (3 retries), but extended outages will result in failed transcripts that can be retried later.
+4. **Moderate transcript length** — Transcripts are capped at 50,000 characters (~12,500 words). Longer transcripts would require chunking, which is listed as a future enhancement.
+5. **Entity names are stable** — The merge strategy relies on slugified entity names (e.g., `john_doe`) being consistent across transcripts. If the LLM produces different slugs for the same person across transcripts, they will be stored as separate entities.
+6. **English-primary content** — While Unicode is fully supported, the LLM prompts are written in English and optimized for English-language transcripts.
 
 ---
 
@@ -235,7 +244,6 @@ make test-cov
 6. **Multi-tenant support** — User-scoped memory trees with auth
 7. **Chunking for long transcripts** — Split transcripts exceeding the LLM context window
 8. **Memory decay** — Confidence scores that decrease over time for unconfirmed facts
-9. **Input guardrails** — Max transcript length enforcement, content validation, and LLM output schema enforcement (e.g. reject extractions that return no entities or malformed JSON)
 
 ---
 
@@ -270,4 +278,6 @@ src/
 └── db/
     ├── session.py             # Database session management
     └── migrations/            # Alembic migrations
+static/
+└── index.html                 # Web UI for transcript submission and status
 ```

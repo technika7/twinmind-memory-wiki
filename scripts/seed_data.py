@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import requests
 
-API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+API_BASE = os.getenv("API_BASE_URL", "http://api:8000/api/v1")
 FIXTURES_DIR = Path(__file__).parent.parent / "tests" / "fixtures" / "sample_transcripts"
 
 
@@ -71,8 +71,8 @@ def seed():
             sys.exit(1)
 
     print(f"\n✨ Done! Memories will be generated in the background.")
-    print(f"   Check status: GET {API_BASE}/transcripts")
-    print(f"   View memories: GET {API_BASE}/memories/tree?path=/\n")
+    print(f"   Check status: GET http://localhost:8000/api/v1/transcripts")
+    print(f"   View memories: GET http://localhost:8000/api/v1/memories/tree?path=/\n")
 
 
 if __name__ == "__main__":
